@@ -10,7 +10,7 @@ static validate(data){
     if(error){
         const errors=error.details.map((d)=>d.message)
     }
-    return {errors:null,value}
+    return {error:null,value}
 }
 }
 
