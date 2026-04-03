@@ -14,8 +14,11 @@ class ApiError extends Error {
   static unauthorized(message = "Unauthorized") {
     return new ApiError(401, message);
   }
-  static conflict(message){
+  static conflict(message="Conflict"){
     return new ApiError(401, message);
+}
+  static forbidden(message="Forbidden"){
+    return new ApiError(412, message);
 }
 }
 
