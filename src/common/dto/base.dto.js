@@ -1,5 +1,4 @@
 import joi from 'joi'
-
 class BaseDto{
 static schema=joi.object({})
 static validate(data){

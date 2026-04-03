@@ -4,6 +4,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   generateResetToken,
+  verifyRefreshToken,
 } from "../../common/utils/jwt.utils.js";
 import User from "./auth.model.js";
 
@@ -44,4 +45,32 @@ const login = async ({ email, password }) => {
   return { user: userObj, accessToken, refreshToken };
 };
 
-export { register, login };
+const refresh=async (token)=>{
+  if(!token) throw ApiError.unauthorized("Refreshtoken is missing")
+ const decoded= verifyRefreshToken(token)
+ const user= await User.findById(decoded.id).select("+refreshToken")
+ if(!user) throw ApiError.unauthorized("User is not found")
+ if(user.refreshToken !==hashToken) throw ApiError.unauthorized("Invalid refresh token")
+ const accessToken= generateAccessToken({id:user._id,role:user.role}) 
+
+ return {accessToken}
+}
+
+const logout=async(userId)=>{
+  // const user=await User.findById(userId)
+  // if(!user) throw ApiError.unauthorized("USer not found")
+  // user.refreshToken=undefined;
+  // await user.save({validateBeforeSave:false})
+
+  await User.findByIdAndUpdate(userId,{refreshToken:null})
+}
+
+const forgotPassword=async(email)=>{
+ const user= await User.findOne({email})
+ if(!user) throw ApiError.notFound("No account with this email")
+ const {rawToken,hashedToken}=generateResetToken()
+ user.resetPasswordToken=hashedToken;
+ user.resetPasswordExpires=Date.now()+15*60*1000
+ await user.save()
+}
+export { register, login, logout,refresh,forgotPassword };
