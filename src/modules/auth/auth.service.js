@@ -7,6 +7,7 @@ import {
   verifyRefreshToken,
 } from "../../common/utils/jwt.utils.js";
 import User from "./auth.model.js";
+import { sendVerificationEmail } from "../../common/config/email.js";
 
 //creating hashToken
 const hashToken = (token) => crypto.hash("sha256").update(token).digest("hex");
@@ -23,6 +24,11 @@ const register = async ({ name, email, password, role }) => {
     verificationToken: hashedToken,
   });
   //seniding email to user with token
+  try {
+    await sendVerificationEmail(email, token);
+  } catch (error) {
+    console.error(error);
+  }
   const userObj = user.toObject();
   delete userObj.password;
   delete userObj.isVerified;
@@ -33,9 +39,10 @@ const login = async ({ email, password }) => {
   const user = await User.findOne({ email }).select("+password");
   if (!user) throw ApiError.unauthorized("Invalid email or password");
   //somehow i will check password
- const ismatch= await user.comparePassword(password);
- if(!ismatch) throw ApiError.unauthorized("Invalid email or password")
-  if (!user.isVerified) throw ApiError.forbidden("Please verify your email before login");
+  const ismatch = await user.comparePassword(password);
+  if (!ismatch) throw ApiError.unauthorized("Invalid email or password");
+  if (!user.isVerified)
+    throw ApiError.forbidden("Please verify your email before login");
   const accessToken = generateAccessToken({ id: user._id, role: user.role });
   const refreshToken = generateRefreshToken({ id: user._id });
   user.refreshToken = hashToken(refreshToken);
@@ -48,32 +55,50 @@ const login = async ({ email, password }) => {
   return { user: userObj, accessToken, refreshToken };
 };
 
-const refresh=async (token)=>{
-  if(!token) throw ApiError.unauthorized("Refreshtoken is missing")
- const decoded= verifyRefreshToken(token)
- const user= await User.findById(decoded.id).select("+refreshToken")
- if(!user) throw ApiError.unauthorized("User is not found")
- if(user.refreshToken !==hashToken) throw ApiError.unauthorized("Invalid refresh token")
- const accessToken= generateAccessToken({id:user._id,role:user.role}) 
+const refresh = async (token) => {
+  if (!token) throw ApiError.unauthorized("Refreshtoken is missing");
+  const decoded = verifyRefreshToken(token);
+  const user = await User.findById(decoded.id).select("+refreshToken");
+  if (!user) throw ApiError.unauthorized("User is not found");
+  if (user.refreshToken !== hashToken)
+    throw ApiError.unauthorized("Invalid refresh token");
+  const accessToken = generateAccessToken({ id: user._id, role: user.role });
 
- return {accessToken}
-}
+  return { accessToken };
+};
 
-const logout=async(userId)=>{
+const logout = async (userId) => {
   // const user=await User.findById(userId)
   // if(!user) throw ApiError.unauthorized("USer not found")
   // user.refreshToken=undefined;
   // await user.save({validateBeforeSave:false})
 
-  await User.findByIdAndUpdate(userId,{refreshToken:null})
-}
+  await User.findByIdAndUpdate(userId, { refreshToken: null });
+};
 
-const forgotPassword=async(email)=>{
- const user= await User.findOne({email})
- if(!user) throw ApiError.notFound("No account with this email")
- const {rawToken,hashedToken}=generateResetToken()
- user.resetPasswordToken=hashedToken;
- user.resetPasswordExpires=Date.now()+15*60*1000
- await user.save()
-}
-export { register, login, logout,refresh,forgotPassword };
+const forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw ApiError.notFound("No account with this email");
+  const { rawToken, hashedToken } = generateResetToken();
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+  await user.save();
+};
+
+const verifyEmail = async (token) => {
+  const hashedToken = hashToken(token);
+  const user = await User.findOne({ verificationToken: hashedToken }).select(
+    "+verificationToken",
+  );
+  if (!user) throw ApiError.notFound("user not  found");
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  await user.save();
+  return user;
+};
+const getMe = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound("User not found");
+  return user;
+};
+export { register, login, logout, refresh, forgotPassword, getMe, verifyEmail };
