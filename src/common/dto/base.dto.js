@@ -8,8 +8,9 @@ static validate(data){
     })
     if(error){
         const errors=error.details.map((d)=>d.message)
+        return { error: errors, value: null };
     }
-    return {error:null,value}
+    return{error:null,value}
 }
 }
 
