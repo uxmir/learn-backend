@@ -12,3 +12,4 @@ const validate=(Dtoclass)=>{
 }
 
 export default validate
+

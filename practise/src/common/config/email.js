@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 
+// Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
   host: "smtp.example.com",
   port: 587,
@@ -28,7 +29,7 @@ try {
 
 const sendEmail=async(to,subject,html)=>{
     await transporter.sendMail({
-        from:`${process.env.SMTP_FROM_EMAIL}`,
+        from:process.env.SMTP_USER,
         to,
         subject,
         html
@@ -37,14 +38,14 @@ const sendEmail=async(to,subject,html)=>{
 
 const sendVerificationEmail=async(to,subject,html)=>{
     await transporter.sendMail({
-        from:`${process.env.SMTP_FROM_EMAIL}`,
+        from:process.env.SMTP_USER,
         to,
-        email,
         subject,
         html
     })
 }
 
-export{
-    sendEmail,sendVerificationEmail
+export {
+    sendEmail,
+    sendVerificationEmail
 }

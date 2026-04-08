@@ -1,10 +1,10 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import ApiError from "./api-error";
-const generateToken = async () => {
+const generateResetToken = async () => {
   const rawToken = crypto.randomBytes(32).toString("hex");
   const hashedToken = crypto
-    .createHash("sha256")
+    .hash("sha256")
     .update(rawToken)
     .digest("hex");
   return {
@@ -39,7 +39,7 @@ const verifyRefreshToken = async (token) => {
 };
 
 export {
-  generateToken,
+  generateResetToken,
   generateAccessToken,
   generateRefreshToken,
   verifyAccessToken,
