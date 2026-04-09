@@ -24,7 +24,7 @@ const register = async ({ name, email, password, role }) => {
   });
   //seniding email to user with token
   try {
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(email, rawToken);
   } catch (error) {
     console.error(error);
   }
@@ -59,13 +59,13 @@ const refresh = async (token) => {
   const decoded = verifyRefreshToken(token);
   const user = await User.findById(decoded.id).select("+refreshToken");
   if (!user) throw ApiError.unauthorized("User is not found");
-  if (user.refreshToken !== hashToken)
+  if (user.refreshToken !== hashToken(token))
     throw ApiError.unauthorized("Invalid refresh token");
   const accessToken = generateAccessToken({ id: user._id, role: user.role });
 
   return { accessToken };
 };
-
+ 
 const logout = async (userId) => {
   // const user=await User.findById(userId)
   // if(!user) throw ApiError.unauthorized("USer not found")

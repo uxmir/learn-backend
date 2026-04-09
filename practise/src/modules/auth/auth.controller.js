@@ -33,4 +33,13 @@ const logoutControlller=async(req,res)=>{
     throw ApiError.catchError(`${error.message}`);
     }
 }
-export { registerController,loginController,logoutControlller };
+const refreshController=async(req,res)=>{
+  try {
+    const refreshToken=res.cookies.refreshToken
+  const {accessToken}=await AuthService.refresh(refreshToken)
+  ApiResponse.ok("accesstoken has been genreted",accessToken)
+  } catch (error) {
+    throw ApiError.catchError(`${error.message}`)
+  }
+}
+export { registerController,loginController,logoutControlller,refreshController };
