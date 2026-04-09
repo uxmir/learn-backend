@@ -14,7 +14,6 @@ const hashToken = (token) => crypto.hash("sha256").update(token).digest("hex");
 const register = async ({ name, email, password, role }) => {
   const existing = await User.findOne({ email });
   if (existing) throw ApiError.conflict("Email already exists");
-
   const { rawToken, hashedToken } = generateResetToken();
   const user = await User.create({
     name,
@@ -39,7 +38,7 @@ const login = async ({ email, password }) => {
   const user = await User.findOne({ email }).select("+password");
   if (!user) throw ApiError.unauthorized("Invalid email or password");
   //somehow i will check password
-  const ismatch = await User.comparePassword(password);
+  const ismatch = await user.comparePassword(password);
   if (!ismatch) throw ApiError.unauthorized("Invalid email or password");
   if (!user.isVerified)
     throw ApiError.forbidden("Please verify your email before login");

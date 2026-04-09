@@ -20,7 +20,7 @@ const logout = async (req, res) => {
   ApiResponse.ok("Logout success");
 };
 const getMe = async (req, res) => {
-  const user = await authService.getMe(req.user.id);
+  const user = await authService.getMe(req.user._id);
   ApiResponse.ok(res, "User profile", user);
 };
 export { register, login, logout, getMe };
