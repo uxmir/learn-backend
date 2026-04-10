@@ -14,7 +14,7 @@ const registerController = async (req, res) => {
 const loginController=async(req,res)=>{
 try {
    const {user,accessToken,refreshToken}=await AuthService.login(req.user.body) 
-   res.cookie("refreshToken",refreshToken,{
+   res.Cookie("refreshToken",refreshToken,{
     httpOnly:true,
     maxAge:7*24*60*60*1000
    })
@@ -33,6 +33,7 @@ const logoutControlller=async(req,res)=>{
     throw ApiError.catchError(`${error.message}`);
     }
 }
+
 const refreshController=async(req,res)=>{
   try {
     const refreshToken=res.cookies.refreshToken
