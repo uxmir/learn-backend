@@ -100,4 +100,7 @@ const getMe = async (userId) => {
   if (!user) throw ApiError.notFound("User not found");
   return user;
 };
-export { register, login, logout, refresh, forgotPassword, getMe, verifyEmail };
+const avatarUpload=async()=>{
+ 
+}
+export { register, login, logout, refresh, forgotPassword, getMe, verifyEmail,avatarUpload };
