@@ -1,11 +1,12 @@
-import multer from "multer";
-import ApiError from "../../../classcode/src/common/utils/api-error";
+import multer, { MulterError } from "multer";
+import ApiError from "../../../../classcode/src/common/utils/api-error";
+
 const errorHandler = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
+  if (err instanceof MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
-        message: "file must be less than 5mb",
+        message: "Something wrong in file",
       });
     }
     return res.status(400).json({
@@ -14,7 +15,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
   if (err instanceof ApiError) {
-    return res.status(err.statusCode).json({
+    return res.status(statusCode).json({
       success: false,
       message: err.message,
     });
