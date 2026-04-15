@@ -50,6 +50,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false,
   },
+  avatar:{
+    type:String,
+    default:false
+  }
 },{timestamps:true});
 
 userSchema.pre("save",async function(next){

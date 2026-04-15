@@ -8,7 +8,9 @@ import {
 } from "../../common/utils/jwt.utils.js";
 import User from "./auth.model.js";
 import { sendVerificationEmail } from "../../common/config/email.js";
-
+import fs from 'node:fs'
+import path from 'path'
+import ImageKit from "imagekit";
 //creating hashToken
 const hashToken = (token) => crypto.hash("sha256").update(token).digest("hex");
 const register = async ({ name, email, password, role }) => {
@@ -100,7 +102,34 @@ const getMe = async (userId) => {
   if (!user) throw ApiError.notFound("User not found");
   return user;
 };
-const avatarUpload=async()=>{
- 
+
+const avatarUpload=async(userId,file)=>{
+try {
+  const fileStream=fs.createReadStream(file.path)
+  const uploadResponse=await ImageKit.files.upload({
+    file:fileStream,
+    fileName:uploadResponse.url,
+    folder:'avatar/users'
+  })
+  await User.findByIdAndUpdate(
+    userId,
+    {avatar:uploadResponse.url},
+    {new:true}
+    )
+    fs.unlinkSync(file.path)
+    return{
+      url:uploadResponse.url,
+      fileId:uploadResponse.fileId
+    }
+} catch (error) {
+  try {
+    if(file.path && fs.existsSync(file.path)){
+      fs.unlinkSync(file.path)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+throw error
 }
 export { register, login, logout, refresh, forgotPassword, getMe, verifyEmail,avatarUpload };

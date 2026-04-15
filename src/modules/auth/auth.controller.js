@@ -25,13 +25,10 @@ const getMe = async (req, res) => {
   ApiResponse.ok(res, "User profile", user);
 };
 
-const uploadAvatar=async(req,res)=>{
-try {
-  const file=req.files;
-  if(!file) throw ApiError.badRequest("no file uploaded")
+const upload=async(req,res)=>{
+  const file=req.file
+  if(!file) ApiError.badRequest("invalid file ")
   const result=await authService.avatarUpload(req.user._id,file)
-} catch (error) {
-  
+  ApiResponse.ok(res,"avatar uploaded",{avatarurl:result.url})
 }
-}
-export { register, login, logout, getMe,uploadAvatar };
+export { register, login, logout, getMe,upload   };
